@@ -1,0 +1,33 @@
+name: Hope's Hourly Scraper
+
+on:
+  schedule:
+    - cron: "0 5-20 * * *"
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install playwright gspread google-auth
+          playwright install chromium
+
+      - name: Run script
+        env:
+          SITE_LOGIN: ${{ secrets.SITE_LOGIN }}
+          SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          MENU_URL: ${{ secrets.MENU_URL }}
+          GOOGLE_CREDS: ${{ secrets.GOOGLE_CREDS }}
+        run: python main.py
