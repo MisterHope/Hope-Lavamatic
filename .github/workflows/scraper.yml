@@ -30,4 +30,4 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL }}
           MENU_URL: ${{ secrets.MENU_URL }}
           GOOGLE_CREDS: ${{ secrets.GOOGLE_CREDS }}
-        run: python main.py
+        run: python lavbox_gh.py
