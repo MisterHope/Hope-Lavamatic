@@ -5,6 +5,7 @@ from playwright.sync_api import sync_playwright
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+import pytz
 import time
 
 #config & index laveries
@@ -57,7 +58,8 @@ def get_monnayeur_value(page):
 
 #fonction d'envoi
 def send_snapshot_to_sheet(data):
-    now = datetime.now()
+    paris = pytz.timezone("Europe/Paris")
+    now = datetime.now(paris)
 
     date = now.strftime("%Y-%m-%d")
     hour = now.strftime("%H:%M:%S")

@@ -20,7 +20,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install playwright gspread google-auth
+          pip install --upgrade pip
+          pip install playwright gspread google-auth pytz
           playwright install chromium
 
       - name: Run script
