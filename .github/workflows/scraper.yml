@@ -2,12 +2,16 @@ name: Hope's Hourly Scraper
 
 on:
   schedule:
-    - cron: "*/30 5-20 * * *"
+    - cron: "18,48 5-21 * * *"
   workflow_dispatch:
 
 jobs:
   run:
     runs-on: ubuntu-latest
+    
+    concurrency:
+      group: scraper
+      cancel-in-progress: false
 
     steps:
       - name: Checkout
