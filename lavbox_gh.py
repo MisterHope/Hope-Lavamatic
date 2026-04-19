@@ -15,6 +15,15 @@ from datetime import datetime
 import pytz
 import time
 
+paris = pytz.timezone("Europe/Paris")
+now = datetime.now(paris)
+
+# blocage hors plage horaire
+if not (6 <= now.hour < 22):
+    print("Hors plage horaire → arrêt")
+    exit()
+
+    
 #config & index laveries
 LOGIN = os.environ["SITE_LOGIN"]
 PASSWORD = os.environ["SITE_PASSWORD"]

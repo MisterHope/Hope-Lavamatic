@@ -1,8 +1,9 @@
 name: Hope's Hourly Scraper
 
+permissions:
+  actions: write
+
 on:
-  schedule:
-    - cron: "18,48 5-21 * * *"
   workflow_dispatch:
 
 jobs:
@@ -36,3 +37,16 @@ jobs:
           MENU_URL: ${{ secrets.MENU_URL }}
           GOOGLE_CREDS: ${{ secrets.GOOGLE_CREDS }}
         run: python lavbox_gh.py
+
+      - name: Wait 30 minutes
+        run: sleep 1800
+
+      - name: Re-trigger workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/scraper.yml/dispatches \
+            -d '{"ref":"main"}'
