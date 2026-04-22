@@ -62,7 +62,7 @@ creds = Credentials.from_service_account_info(
 )
 #gSheets connection and open spreadsheet
 client = gspread.authorize(creds)
-sheet = client.open("Historique Monnayeur").sheet1
+sheet = client.open("Répartition Pièces Banque").worksheet("Historique Monnayeur")
 all_rows = sheet.get_all_values()
 last_row = all_rows[-1] if len(all_rows) > 1 else None
 
