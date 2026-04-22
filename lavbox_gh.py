@@ -136,8 +136,6 @@ with sync_playwright() as p:
     threshold_raw = sheet.acell("H4").value  # lit le seuil d'alerte depuis une cellule puis le format en float
     threshold = float(threshold_raw.replace("€", "").replace(",", ".").strip())
     
-
-
     #loop p chaque etab
     for name, selector in LAVERIES:
         #revenir état stable : menu index
@@ -194,10 +192,13 @@ with sync_playwright() as p:
 
                 if variation > threshold:
                     print(">>> ALERT SHOULD TRIGGER <<<")
-                    telegram_alert(
-                        f"⚠️ {name} variation : {variation:.2f} € "
-                        f"(ancien {previous_value:.2f} → actuel {numeric_value:.2f}, seuil {threshold} €)"
-                    )
+                    try:
+                        telegram_alert(
+                            f"⚠️ {name} variation : {variation:.2f} € "
+                            f"(ancien {previous_value:.2f} → actuel {numeric_value:.2f}, seuil {threshold} €)"
+                        )
+                    except Exception as e:
+                        print(f"[TG ERROR] {name} -> {e}")
             else:
                 print("SKIP: numeric_value or previous_value is None")
 

@@ -35,4 +35,6 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL }}
           MENU_URL: ${{ secrets.MENU_URL }}
           GOOGLE_CREDS: ${{ secrets.GOOGLE_CREDS }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: python lavbox_gh.py
