@@ -40,14 +40,12 @@ LAVERIES = [
     ("SAS TOP SPEED", "text=SAS TOP SPEED")
 ]
 
-#TG alerts anti spam
-STATE_FILE = "alert_state.json"
-
-if os.path.exists(STATE_FILE):
-    with open(STATE_FILE, "r") as f:
-        last_alert_state = json.load(f)
-else:
-    last_alert_state = {}
+COLUMN_MAP = {
+    "BUFFA": 2,
+    "SAS ART BUBBLE": 3,
+    "SAS LAVSPEED 54": 4,
+    "SAS TOP SPEED": 5
+}
 
 
 #GOOGLE
@@ -65,7 +63,8 @@ creds = Credentials.from_service_account_info(
 #gSheets connection and open spreadsheet
 client = gspread.authorize(creds)
 sheet = client.open("Historique Monnayeur").sheet1
-
+all_rows = sheet.get_all_values()
+last_row = all_rows[-1] if len(all_rows) > 1 else None
 
 #FONCTIONS
 #récup des valeurs
@@ -108,11 +107,13 @@ def telegram_alert(message):
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
 
-    requests.get(url, params={
+    response = requests.get(url, params={
         "chat_id": chat_id,
         "text": message
     })
 
+    print("TG status:", response.status_code)
+    print("TG response:", response.text)
 
 #PLAYWRIGHT
 #script playwright 
@@ -131,8 +132,12 @@ with sync_playwright() as p:
     page.wait_for_load_state("networkidle")
 
     results = {}
+    
     threshold_raw = sheet.acell("H4").value  # lit le seuil d'alerte depuis une cellule puis le format en float
     threshold = float(threshold_raw.replace("€", "").replace(",", ".").strip())
+    
+
+
     #loop p chaque etab
     for name, selector in LAVERIES:
         #revenir état stable : menu index
@@ -148,27 +153,54 @@ with sync_playwright() as p:
             print(name, value)
 
             #alerte TG
+            print("----")
+            print("NAME:", name)
+            print("RAW VALUE:", value)
+
             # conversion en float
             try:
                 numeric_value = float(value.replace(",", "."))
+                print("NUMERIC VALUE:", numeric_value)
             except:
                 numeric_value = None
+                print("NUMERIC VALUE: None (conversion failed)")
+            
+            print("LAST ROW:", last_row)
 
-            if numeric_value is not None:
+            previous_value = None
 
-                previous_value = last_alert_state.get(name) #valeur précédente, récupérée dans le json
+            if last_row:
+                raw_prev = last_row[COLUMN_MAP[name]]
+                print("RAW PREVIOUS:", raw_prev)
 
-                if previous_value is not None:
-                    variation = abs(numeric_value - previous_value) #comparaison anc valeur avec nouv valeur
-
-                    if variation > threshold: #si variation dépasse seuil, envoi alerte TG
-                        telegram_alert(
-                            f"⚠️ {name} variation : {variation:.2f} € "
-                            f"(ancien {previous_value:.2f} → actuel {numeric_value:.2f}, seuil {threshold} €)"
+                if raw_prev:
+                    try:
+                        previous_value = float(
+                            raw_prev
+                            .replace("€", "")
+                            .replace(",", ".")
+                            .strip()
                         )
+                        print("PREVIOUS VALUE:", previous_value)
+                    except:
+                        print("PREVIOUS VALUE: conversion failed")
+                        previous_value = None
 
-                # MAJ valeur
-                last_alert_state[name] = numeric_value
+            # comparaison
+            if numeric_value is not None and previous_value is not None:
+                variation = abs(numeric_value - previous_value)
+                print("VARIATION:", variation)
+                print("THRESHOLD:", threshold)
+
+                if variation > threshold:
+                    print(">>> ALERT SHOULD TRIGGER <<<")
+                    telegram_alert(
+                        f"⚠️ {name} variation : {variation:.2f} € "
+                        f"(ancien {previous_value:.2f} → actuel {numeric_value:.2f}, seuil {threshold} €)"
+                    )
+            else:
+                print("SKIP: numeric_value or previous_value is None")
+
 
             # storage p envoi à Gsheets
             if value and value != "0000":
@@ -182,10 +214,6 @@ with sync_playwright() as p:
         time.sleep(1)  # petite pause stabilité
 
     browser.close()
-
-#TG: auto json dump anti spam
-with open(STATE_FILE, "w") as f:
-    json.dump(last_alert_state, f)
 
 #send to Gsheets
 send_snapshot_to_sheet(results)
