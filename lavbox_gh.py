@@ -112,8 +112,6 @@ def telegram_alert(message):
         "text": message
     })
 
-    print("TG status:", response.status_code)
-    print("TG response:", response.text)
 
 #PLAYWRIGHT
 #script playwright 
