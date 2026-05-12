@@ -184,7 +184,7 @@ with sync_playwright() as p:
 
             # comparaison
             if numeric_value is not None and previous_value is not None:
-                variation = abs(numeric_value - previous_value)
+                variation = previous_value - numeric_value
                 print("VARIATION:", variation)
                 print("THRESHOLD:", threshold)
 
