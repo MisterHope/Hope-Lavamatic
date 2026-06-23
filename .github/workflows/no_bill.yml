@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install playwright pytz python-dotenv
+          pip install playwright pytz python-dotenv requests
           playwright install chromium
 
       - name: Run script
