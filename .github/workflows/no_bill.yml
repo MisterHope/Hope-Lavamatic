@@ -1,0 +1,39 @@
+name: Historique Check
+
+on:
+  schedule:
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    
+    concurrency:
+      group: no_bill
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install playwright pytz python-dotenv
+          playwright install chromium
+
+      - name: Run script
+        env:
+          SITE_LOGIN: ${{ secrets.SITE_LOGIN }}
+          SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          MENU_URL: ${{ secrets.MENU_URL }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: python no_bill.py
