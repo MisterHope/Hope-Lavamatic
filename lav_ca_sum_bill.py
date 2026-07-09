@@ -56,35 +56,33 @@ sheet = client.open("Répartition Pièces Banque").worksheet("Collecte")
 #FONCTIONS
 #récup valeurs
 def get_bill_counts(page):
-    # cibler la ligne "Billets" qui ouvre la modale
-    billets_row = page.locator("div.select-line", has=page.locator("text=Billets")).first
-    billets_row.wait_for()
-    billets_row.click()
+    page.locator("a.fonctionicon[href*='genere_collecte_lire.php']").click()
 
-    # attendre que la modale billets soit visible
-    page.wait_for_selector("#Cmodal-billets")
-    page.wait_for_selector("#CVALEUR-BILLETS-5")
-    page.wait_for_selector("#CVALEUR-BILLETS-10")
-    page.wait_for_selector("#CVALEUR-BILLETS-20")
+    page.wait_for_selector("table.tableau")
 
-    count_5 = page.inner_text("#CVALEUR-BILLETS-5").strip()
-    count_10 = page.inner_text("#CVALEUR-BILLETS-10").strip()
-    count_20 = page.inner_text("#CVALEUR-BILLETS-20").strip()
+    bill_row = page.locator("tr.trow", has_text="NOMBRE DE BILLETS EMPILÉS").first
+    bill_row.wait_for()
 
-    # fermer la modale billets en restant scope dans Cmodal-billets
-    page.locator("#Cmodal-billets input.mod-bouton[value='Fermer']").click()
+    # tableau imbriqué avec Type / Nombre
+    nested_table = bill_row.locator("table.tableau").first
+    number_row = nested_table.locator("tr.trow").nth(1)
+
+    cells = number_row.locator("td.tval")
+
+    count_5 = cells.nth(1).inner_text().strip()
+    count_10 = cells.nth(2).inner_text().strip()
+    count_20 = cells.nth(3).inner_text().strip()
 
     return {
         "5": count_5,
         "10": count_10,
-        "20": count_20
+        "20": count_20,
     }
 
 def send_snapshot_to_sheet(data):
     paris = pytz.timezone("Europe/Paris")
     now = datetime.now(paris)
 
-    # format simple pour A1
     timestamp = now.strftime("%d/%m/%Y %H:%M")
 
     updates = {
