@@ -73,10 +73,16 @@ def get_bill_counts(page):
     count_10 = cells.nth(2).inner_text().strip()
     count_20 = cells.nth(3).inner_text().strip()
 
+    # pieces
+    coin_row = page.locator("tr.trow", has_text="MONNAIE DEVERSÉE EN CAISSE").first
+    coin_value = coin_row.locator("td.tval").inner_text().strip()
+    coin_value = coin_value.replace("\xa0€", "").replace(" €", "").strip()
+
     return {
         "5": count_5,
         "10": count_10,
         "20": count_20,
+        "coins": coin_value,
     }
 
 def send_snapshot_to_sheet(data):
@@ -97,6 +103,7 @@ def send_snapshot_to_sheet(data):
         updates[f"{col}2"] = bills.get("5", "")
         updates[f"{col}3"] = bills.get("10", "")
         updates[f"{col}4"] = bills.get("20", "")
+        updates[f"{col}5"] = bills.get("coins", "")
 
     # envoi cellule par cellule
     for cell, value in updates.items():
