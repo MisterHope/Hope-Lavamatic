@@ -129,9 +129,7 @@ with sync_playwright() as p:
             if last_bill is None:
 
                 telegram_alert(
-                    f"⚠️ {name}\n"
-                    f"Aucune billet trouvé dans l'historique.\n"
-                    f"Vérifier si lecteur fonctionne."
+                    f"{name} : aucun billet trouvé dans l'historique."
                 )
 
             else:
@@ -147,8 +145,7 @@ with sync_playwright() as p:
                 if age_hours > 24:
 
                     telegram_alert(
-                        f"⚠️ {name}\n"
-                        f"Aucun billet depuis plus de 24 h.\n"
+                        f"{name} : Aucun billet depuis plus de 24 h\n"
                         f"Dernier billet : {last_bill.strftime('%d/%m à %H:%M')}."
                     )
 

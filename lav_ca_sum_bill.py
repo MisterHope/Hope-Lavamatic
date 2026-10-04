@@ -85,7 +85,7 @@ def get_bill_counts(page):
         "coins": coin_value,
     }
 
-def send_snapshot_to_sheet(data):
+def send_to_sheet(data):
     paris = pytz.timezone("Europe/Paris")
     now = datetime.now(paris)
 
@@ -156,4 +156,4 @@ with sync_playwright() as p:
 
 #send to Gsheets
 print("RESULTS:", results)
-send_snapshot_to_sheet(results)
+send_to_sheet(results)
